@@ -11,6 +11,6 @@ const adapter = new PrismaNeon({
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
-if (process.sourceMapsEnabled.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = prisma;
 }
