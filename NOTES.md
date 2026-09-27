@@ -1,13 +1,11 @@
 ## Where I left off
-Session 4 done. Twitch app registered, client-credentials token working
-(~60 day expiry). Confirmed against live IGDB:
-  external_games: filter external_game_source = 1, NOT category = 1
-  uid = steam appid as STRING; IGDB id is `game` here
-  game_time_to_beats: filter on `game_id`; values in seconds
-RDR2: hastily 48.7h / normally 89.5h / completely 208.3h, count 29.
-Test script at scripts/igdb-test.ts (not committed yet).
+Session 5 done. Catalogue seeded: 176,241 games, 174,399 IGDB entries,
+44 skipped. ~1,840 Steam apps share an IGDB game (duplicate editions).
+Keyset pagination, not offset. Apicalypse queries must be ONE LINE —
+newlines give a bare "Syntax Error".
+skipDuplicates never updates existing rows (the RDR2 row had to be
+fixed by hand).
 
 ## Next action
-Session 5: seed script part 1. Paginate external_games where
-external_game_source = 1, 500 per request, under 4 req/sec, upsert into
-Game with match_status. ~4h — the biggest session in the milestone.
+Session 6: walk game_time_to_beats wholesale with keyset pagination,
+update IgdbGame rows by game_id. Record coverage % in here. ~2h.
