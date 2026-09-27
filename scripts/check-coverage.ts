@@ -103,14 +103,13 @@ async function main() {
         console.log(`  ${b.padEnd(20)} ${n}`);
     }
 
-    console.log("\nGOOD-PROGRESS CANDIDATES");
+    console.log("\nGOOD-PROGRESS (ascending ratio)");
     rated
         .filter((g) => g.ratio >= BARELY_STARTED && g.ratio < NEARLY_DONE)
-        .sort((a, b) => b.ratio - a.ratio)
-        .slice(0, 12)
+        .sort((a, b) => a.ratio - b.ratio)
         .forEach((g) =>
         console.log(
-            `  ${g.name.slice(0, 38).padEnd(40)} ${g.hours.toFixed(1)}h of ~${g.estHours.toFixed(1)}h  ratio ${g.ratio.toFixed(2)}`
+            `  ${g.ratio.toFixed(2)} ${g.name.slice(0, 38).padEnd(40)} ${g.hours.toFixed(1)}h of ~${g.estHours.toFixed(1)}h`
         )
     );
 }
