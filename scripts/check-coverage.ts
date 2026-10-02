@@ -8,7 +8,7 @@ const steamId = process.argv[2];
 
 if(!STEAM_API_KEY) throw new Error("Missing STEAM_API_KEY in .env");
 if(!DB_URL) throw new Error("Missing DATABASE_URL_UNPOOLED in .env");
-if(!steamId) throw new Error("Usage: npx tsx scripts/check-coverage.ts 76561198076437324");
+if(!steamId) throw new Error("Usage: npx tsx scripts/check-coverage.ts <steamID64>");
 
 const adapter = new PrismaNeon({ connectionString: DB_URL });
 const prisma = new PrismaClient({ adapter });
@@ -72,8 +72,10 @@ async function main() {
     console.log(`  played AND time-to-beat:     ${playedWithTtb} (${pct(playedWithTtb, played)})`);
 
     const OVERSHOT = 1.2;
-    const NEARLY_DONE = 0.7;
+    const NEARLY_DONE = 0.3;
     const BARELY_STARTED = 0.1;
+    const isMultiplayerOnly = (modes: number[]) =>
+        modes.length > 0 && !modes.includes(1);
 
     const rated = games
         .filter((g) => g.playtime_forever > 0)
@@ -82,19 +84,20 @@ async function main() {
             if (normally == null) return null;
             const hours = g.playtime_forever / 60;
             const estHours = normally / 3600;
-            return { name: g.name ?? String(g.appid), hours, estHours, ratio: hours / estHours };
+            return { name: g.name ?? String(g.appid), hours, estHours, ratio: hours / estHours, modes: byAppId.get(g.appid)?.igdbGame?.gameModes ?? [], };
         })
         .filter((x): x is NonNullable<typeof x> => x !== null);
 
-    const bucketOf = (r: number) =>
-        r > OVERSHOT ? "no-commitment"
-        : r >= NEARLY_DONE ? "(probably done)"
-        : r >= BARELY_STARTED ? "good-progress"
+    const bucketOf = (g: { ratio: number; modes: number[] }) =>
+        isMultiplayerOnly(g.modes) ? "no-commitment (multiplayer)"
+        : g.ratio > OVERSHOT ? "no-commitment"
+        : g.ratio >= NEARLY_DONE ? "(probably done)"
+        : g.ratio >= BARELY_STARTED ? "good-progress"
         : "(barely started)";
 
     const counts = new Map<string, number>();
     for (const g of rated) {
-        const b = bucketOf(g.ratio);
+        const b = bucketOf(g);
         counts.set(b, (counts.get(b) ?? 0) + 1);
     }
 
@@ -105,7 +108,7 @@ async function main() {
 
     console.log("\nGOOD-PROGRESS (ascending ratio)");
     rated
-        .filter((g) => g.ratio >= BARELY_STARTED && g.ratio < NEARLY_DONE)
+        .filter((g) => bucketOf(g) === "good-progress")
         .sort((a, b) => a.ratio - b.ratio)
         .forEach((g) =>
         console.log(

@@ -44,27 +44,17 @@ async function igdb(endpoint: string, query: string, token: string) {
 async function main() {
     const token = await getAccessToken();
 
-    const external = await igdb(
-        "external_games",
-        `fields game, name, uid; where uid = "1174180" & external_game_source = 1;`,
-        token
-    );
-    console.log("Steam appid 1174180 maps to IGDB game:", external[0].game);
+    const modes = await igdb("game_modes", `fields id, name, slug; limit 50;`, token);
+    console.log("game modes:");
+    console.log(JSON.stringify(modes, null, 2));
 
-    const ttb = await igdb(
-        "game_time_to_beats",
-        `fields *; where game_id = ${external[0].game};`,
+    const samples = await igdb(
+        "games",
+        `fields id, name, game_modes; where id = (25076, 1372, 1877);`,
         token
     );
-    console.log("time to beat:");
-    console.log(JSON.stringify(ttb, null, 2));
-
-    const page = await igdb(
-        "external_games",
-        `fields game, uid; where external_game_source = 1; limit 5;`,
-        token
-    );
-    console.log(`bulk query returned ${page.length} rows, first:`, page[0]);
+    console.log("\nsample games:");
+    console.log(JSON.stringify(samples, null, 2));
 }
 
 main();

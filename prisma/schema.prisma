@@ -59,6 +59,7 @@ model IgdbGame {
   completelySeconds Int?
   sampleCount       Int?
   updatedAt         DateTime @updatedAt
+  gameModes         Int[]    @default([])
 
   games Game[]
 }
